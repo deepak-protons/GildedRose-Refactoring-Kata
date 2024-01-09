@@ -24,6 +24,7 @@ class GildedRose
 
   def update_aged_brie(item)
     item.quality = [item.quality + 1, 50].min
+    item.quality = [item.quality + 1, 50].min if item.sell_in <= 0
   end
 
   def update_backstage_passes(item)
@@ -48,13 +49,18 @@ class GildedRose
   end
 
   def determine_quality_degradation(item)
-    base_degradation = 1
+    base_degradation = base_quality_degradation(item.name)
     additional_degradation(item) + base_degradation
   end
 
+  def base_quality_degradation(item_name)
+    item_name == 'Conjured Mana Cake' ? 2 : 1
+  end
+
   def additional_degradation(item)
-    return 1 if item.sell_in <= 0
-    0
+    return 0 if item.sell_in > 0
+    return 1 if item.name != 'Conjured Mana Cake'
+    2
   end
 
   def calculate_updated_quality(current_quality, degradation_amount)
