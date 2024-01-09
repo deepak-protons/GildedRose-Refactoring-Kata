@@ -1,61 +1,64 @@
 class GildedRose
-
   def initialize(items)
     @items = items
   end
 
-  def update_quality()
+  def update_quality
     @items.each do |item|
-      if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert"
-        if item.quality > 0
-          if item.name != "Sulfuras, Hand of Ragnaros"
-            # Quality update for general item
-            item.quality = item.quality - 1
-          end
-        end
+      case item.name
+      when 'Aged Brie'
+        update_aged_brie(item)
+      when 'Backstage passes to a TAFKAL80ETC concert'
+        update_backstage_passes(item)
+      when 'Sulfuras, Hand of Ragnaros'
+        next # Sulfuras does not change
       else
-        if item.quality < 50
-          # Quality update for Item 'Aged Brie'
-          item.quality = item.quality + 1
-          if item.name == "Backstage passes to a TAFKAL80ETC concert"
-            if item.sell_in < 11
-              if item.quality < 50
-                # Quality update for Item 'Backstage passes to a TAFKAL80ETC concert'
-                item.quality = item.quality + 1
-              end
-            end
-            if item.sell_in < 6
-              if item.quality < 50
-                # Quality update for Item 'Backstage passes to a TAFKAL80ETC concert'
-                item.quality = item.quality + 1
-              end
-            end
-          end
-        end
+        update_general_item(item)
       end
-      if item.name != "Sulfuras, Hand of Ragnaros"
-        item.sell_in = item.sell_in - 1
-      end
-      if item.sell_in < 0
-        if item.name != "Aged Brie"
-          if item.name != "Backstage passes to a TAFKAL80ETC concert"
-            if item.quality > 0
-              if item.name != "Sulfuras, Hand of Ragnaros"
-                item.quality = item.quality - 1
-              end
-            end
-          else
-            # Quality update for Item 'Backstage passes to a TAFKAL80ETC concert'
-            item.quality = item.quality - item.quality
-          end
-        else
-          if item.quality < 50
-            # Quality update for Item 'Aged Brie'
-            item.quality = item.quality + 1
-          end
-        end
-      end
+
+      update_sell_in(item)
     end
+  end
+
+  private
+
+  def update_aged_brie(item)
+    item.quality = [item.quality + 1, 50].min
+  end
+
+  def update_backstage_passes(item)
+    if item.sell_in <= 0
+      item.quality = 0
+    elsif item.sell_in <= 5
+      item.quality = [item.quality + 3, 50].min
+    elsif item.sell_in <= 10
+      item.quality = [item.quality + 2, 50].min
+    else
+      item.quality = [item.quality + 1, 50].min
+    end
+  end
+
+  def update_general_item(item)
+    quality_degradation = determine_quality_degradation(item)
+    item.quality = calculate_updated_quality(item.quality, quality_degradation)
+  end
+
+  def update_sell_in(item)
+    item.sell_in -= 1 unless item.name == 'Sulfuras, Hand of Ragnaros'
+  end
+
+  def determine_quality_degradation(item)
+    base_degradation = 1
+    additional_degradation(item) + base_degradation
+  end
+
+  def additional_degradation(item)
+    return 1 if item.sell_in <= 0
+    0
+  end
+
+  def calculate_updated_quality(current_quality, degradation_amount)
+    [current_quality - degradation_amount, 0].max
   end
 end
 
