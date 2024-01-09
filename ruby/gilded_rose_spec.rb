@@ -158,6 +158,25 @@ describe GildedRose do
           end
         end
       end
+
+      context "when item name is 'Conjured'" do
+        conjured = Item.new(name="Conjured Mana Cake", sell_in=3, quality=10)
+        context "when sell by date has NOT been passed" do
+          GildedRose.new([conjured]).update_quality
+          it 'does update the quantity by 2 i.e. 8' do
+            expect(conjured.quality).to eq 8
+          end
+        end
+        context "when sell by date has been passed" do
+          before do
+            conjured.sell_in = -1
+            GildedRose.new([conjured]).update_quality
+          end
+          it 'does update the quantity by 4 i.e. 4' do
+            expect(conjured.quality).to eq 4
+          end
+        end
+      end
     end
   end
 end
